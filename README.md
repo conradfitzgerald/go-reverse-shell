@@ -19,19 +19,26 @@ Packages {
 A Linux OS
 ```
 
+### Does it work on Windows?
+This thing will compile/run on Windows. But God forbid it'll actually work.
+Something to do with weird `bufio.NewReader(os.Stdin)` input streams and `\r\n` newlines over regular `\n`.
+If someone wants to help make a Windows branch, feel free to do so.
+
 ### Installation/Usage:
 `go run main.go` OR `go build main.go`
 
+---
+
 ## TODO:
 ```
--- Change commandline struct names
--- Implement cat()
--- Implement help()
--- Implement exec()
--- Implement download()
--- Set up server/client
--- Windows Testing
--- Verify Build Requirement versions
+[ ] -- Change commandline struct names
+[ ] -- Implement cat()
+[ ] -- Implement help()
+[ ] -- Implement exec()
+[ ] -- Implement download()
+[ ] -- Set up server/client
+[X] -- Windows Testing
+[ ] -- Verify Build Requirement versions
 ```
 
 ---
