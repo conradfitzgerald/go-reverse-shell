@@ -31,14 +31,22 @@ If someone wants to help make a Windows branch, feel free to do so.
 
 ## TODO:
 ```
-[ ] -- Change commandline struct names
-[ ] -- Implement cat()
-[ ] -- Implement help()
-[ ] -- Implement exec()
+[X] -- Change commandline struct names
+[X] -- Implement cat()
+[X] -- Implement help()
+[X] -- Implement exec()
+[ ] -- Implement rm/rf()
+[ ] -- Enumeration scripts?
 [ ] -- Implement download()
+[ ] -- Implement upload()
+[ ] -- Implement remoteDownload()
 [ ] -- Set up server/client
 [X] -- Windows Testing
+[ ] -- Windows working
 [ ] -- Verify Build Requirement versions
+[ ] -- Errors should not kill the shell
+[ ] -- Create header for shell functions
+[ ] -- Create header for struct and program functions
 ```
 
 ---
