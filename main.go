@@ -35,6 +35,25 @@ func cd(path string) int {
 	return 0
 }
 
+func help(command string) {
+	if command != "" {
+		fmt.Print("Invalid command.\n\n")
+	}
+	fmt.Println("Commands:\t\tDescription:")
+	fmt.Println()
+	fmt.Println("\tcd\t--\tChanges current/present working directory.")
+	fmt.Println()
+	fmt.Println("\tls\t--\tEnumerates all files & folders in a directory.\n\t\t\tLists file sizes in bytes.")
+	fmt.Println()
+	fmt.Println("\tpwd\t--\tReturns the current working directory.\n\t\t\tWhy would you use this, the shell does it already...")
+	fmt.Println()
+	fmt.Println("\tcat\t--\tPrints a file to the shell.")
+	fmt.Println()
+	fmt.Println("\texec\t--\tComing soon!")
+	fmt.Println()
+	fmt.Println("\thelp\t--\tLists this dialogue.")
+}
+
 //Enumerates Files/Folders in a directory.
 //Can also probably get away with returning nothing.
 //Need to figure out proper tab alignment.
@@ -53,6 +72,12 @@ func ls(path string) int {
 		}
 	}
 	return 0
+}
+
+func cat(path string) string {
+	file, err := ioutil.ReadFile(path)
+	check(err)
+	return string(file)
 }
 
 //Congrats! Here's how it works.
@@ -89,10 +114,14 @@ func main() {
 			cd(input.arguments[0])
 		case "ls":
 			ls(input.arguments[0])
-		//case "cat": 			//Not Yet implemented.
-		//	cat()				//Thus commented out.
+		case "cat":
+			fmt.Print(cat(input.arguments[0]))
 		case "pwd":
 			fmt.Println(pwd())
+		case "help":
+			help("")
+		default:
+			help("gangweed") //rise the heck up. its gamer time
 		}
 	}
 }
