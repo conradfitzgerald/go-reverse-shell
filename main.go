@@ -4,14 +4,16 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 )
 
-var input userInput //User inpute (command and arguments)
+var input userInput //User input (command and arguments)
 var args []string   //Temporary argument storage
 
 //Gets rid of a few lines of code.
@@ -58,6 +60,12 @@ func help(command string) {
 	fmt.Println("\thelp\t--\tLists this dialogue.")
 	fmt.Println()
 	fmt.Println("\tos\t--\tReturns the OS.")
+	fmt.Println()
+	fmt.Println("\trm\t--\tDeletes the specified file")
+	fmt.Println()
+	fmt.Println("\trf\t--\tDeletes the specified folder")
+	fmt.Println()
+	fmt.Println("\tremote\t--\tDownloads a file from url to the desired path/name.\n\t\t\tUSAGE: remote [URL] [PATH/FILE]")
 } //End help()
 
 //Enumerates Files/Folders in a directory.
@@ -84,40 +92,97 @@ func cat(path string) string {
 	return string(file)
 } //End cat()
 
+//DownloadFile The code behind remote()
+func DownloadFile(filepath string, url string) {
+
+	// Create the file
+	out, err := os.Create(filepath)
+	check(err)
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	check(err)
+	defer resp.Body.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	check(err)
+}
+
+//Downloads a file to the current directory (or whatever directory specified by the path prefixing the desired filename)
+func remote(url string, path string) {
+	DownloadFile(path, url)
+} //End remote()
+
 //Absolute clusterfuck. Will comment better at a later date.
 //Oh, by the way, it's the execute command. <3
 func ex(commands []string) {
-	var passedArgs userInput
+	var passedArgs userInput //Going to filter out the first option (-n/-r) using the same pop/leftshift alg
 	passedArgs.cmd = commands[0]
 	passedArgs.argv = sliceShorten(commands)
-	if passedArgs.cmd == "-n" {
-		if runtime.GOOS == "windows" {
-			err := exec.Command("cmd", passedArgs.argv...).Run()
+
+	if passedArgs.cmd == "-n" { //The option to execute without returning anything
+		if runtime.GOOS == "windows" { //Windows doesn't even run this, but I included it anyway LOL
+			err := exec.Command("cmd", passedArgs.argv...).Run() //Just checking if there's a problem with running the file. 'cmd -c' may also be a viable option for the command string.
 			check(err)
-			fmt.Println("Probably succeeded.")
-		} else if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+			fmt.Println("Probably succeeded.") //There is no way to know if you don't return the output :)
+
+		} else if runtime.GOOS == "linux" || runtime.GOOS == "darwin" { //MacOS or Linux
 			err := exec.Command("/bin/bash", passedArgs.argv...).Run()
 			check(err)
 			fmt.Println("Probably succeeded.)")
+
 		} else {
 			fmt.Println("Weird OS detected (How did you even get this to compile???")
+
 		}
+
 	} else if passedArgs.cmd == "-r" {
 		if runtime.GOOS == "windows" {
 			cmdOut, err := exec.Command("cmd", passedArgs.argv...).Output()
 			check(err)
 			fmt.Print(string(cmdOut), '\n')
+
 		} else if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
 			cmdOut, err := exec.Command("/bin/bash", passedArgs.argv...).Output()
 			check(err)
 			fmt.Print(string(cmdOut), '\n')
+
 		} else {
 			fmt.Println("Weird OS detected (How did you even get this to compile???")
 		}
+
 	} else {
-		fmt.Println("Learn to RTFM and try again.")
+		fmt.Println("Learn to RTFM and try again.") //No options specified
 	}
 } //End ex()
+
+//Deletes a file.
+//rf should be used for folders (safety)
+func rm(path string) {
+	fileInfo, infoerr := os.Stat(path)
+	check(infoerr)
+	if fileInfo.IsDir() == true {
+		fmt.Println("This is a directory.\nHint: use 'rf'")
+	} else {
+		err := os.Remove(path)
+		check(err)
+	} //End conditional
+} //End rm()
+
+//Removes a folder.
+//rm should be used for files (safety)
+func rf(path string) {
+	folderInfo, infoerr := os.Stat(path)
+	check(infoerr)
+	if folderInfo.IsDir() == false {
+		fmt.Println("This is a file.\nHint: use 'rm'")
+	} else {
+		err := os.Remove(path)
+		check(err)
+	} //End conditional
+} //End rf()
 
 //Congrats! Here's how it works.
 func main() {
@@ -131,11 +196,8 @@ func main() {
 		args = strings.Split(strings.TrimSuffix(line, "\n"), " ") //Take off the newline, split everything by spaces.
 		input.cmd = args[0]                                       //Set the actual command.
 
-		//Performing pop/left shift in the input slice
-		args = sliceShorten(args)
-
-		//Set the actual arguments to the remaining slice.
-		input.argv = args
+		//Performing pop/left shift in the input slice, assigns to the input struct.
+		input.argv = sliceShorten(args)
 
 		//Comand Switch
 		cmdSwitch(input.cmd)
@@ -172,6 +234,12 @@ func cmdSwitch(command string) {
 		help("")
 	case "os":
 		fmt.Println(runtime.GOOS)
+	case "rm":
+		rm(input.argv[0])
+	case "rf":
+		rf(input.argv[0])
+	case "remote":
+		remote(input.argv[0], input.argv[1])
 	default:
 		help("gangweed") //rise tf up. its gamer time
 	} //End switch
