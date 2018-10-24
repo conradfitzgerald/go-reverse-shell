@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 )
 
@@ -28,7 +30,6 @@ func pwd() string {
 } //End pwd()
 
 //Moves around the filesystem.
-//I can probably get away without returning anything.
 func cd(path string) {
 	if path == "" {
 		path = "."
@@ -52,9 +53,11 @@ func help(command string) {
 	fmt.Println()
 	fmt.Println("\tcat\t--\tPrints a file to the shell.")
 	fmt.Println()
-	fmt.Println("\texec\t--\tComing soon!")
+	fmt.Println("\texec\t--\tExecutes a file based on the path given.\n\t\t\tUse -n(oreturn) or -r(eturn) to get the output.\n\t\t\texec [-OPTION] [FILE]")
 	fmt.Println()
 	fmt.Println("\thelp\t--\tLists this dialogue.")
+	fmt.Println()
+	fmt.Println("\tos\t--\tReturns the OS.")
 } //End help()
 
 //Enumerates Files/Folders in a directory.
@@ -81,6 +84,41 @@ func cat(path string) string {
 	return string(file)
 } //End cat()
 
+//Absolute clusterfuck. Will comment better at a later date.
+//Oh, by the way, it's the execute command. <3
+func ex(commands []string) {
+	var passedArgs userInput
+	passedArgs.cmd = commands[0]
+	passedArgs.argv = sliceShorten(commands)
+	if passedArgs.cmd == "-n" {
+		if runtime.GOOS == "windows" {
+			err := exec.Command("cmd", passedArgs.argv...).Run()
+			check(err)
+			fmt.Println("Probably succeeded.")
+		} else if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+			err := exec.Command("/bin/bash", passedArgs.argv...).Run()
+			check(err)
+			fmt.Println("Probably succeeded.)")
+		} else {
+			fmt.Println("Weird OS detected (How did you even get this to compile???")
+		}
+	} else if passedArgs.cmd == "-r" {
+		if runtime.GOOS == "windows" {
+			cmdOut, err := exec.Command("cmd", passedArgs.argv...).Output()
+			check(err)
+			fmt.Print(string(cmdOut), '\n')
+		} else if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+			cmdOut, err := exec.Command("/bin/bash", passedArgs.argv...).Output()
+			check(err)
+			fmt.Print(string(cmdOut), '\n')
+		} else {
+			fmt.Println("Weird OS detected (How did you even get this to compile???")
+		}
+	} else {
+		fmt.Println("Learn to RTFM and try again.")
+	}
+} //End ex()
+
 //Congrats! Here's how it works.
 func main() {
 	in := bufio.NewReader(os.Stdin)
@@ -94,7 +132,7 @@ func main() {
 		input.cmd = args[0]                                       //Set the actual command.
 
 		//Performing pop/left shift in the input slice
-		sliceShorten(args)
+		args = sliceShorten(args)
 
 		//Set the actual arguments to the remaining slice.
 		input.argv = args
@@ -110,13 +148,14 @@ type userInput struct {
 	argv []string
 } //End Structure definition.
 
-func sliceShorten(slice []string) { //Pop/left shift on the arguments from the raw input.
+func sliceShorten(slice []string) []string { //Pop/left shift on a given slice
 	copy(slice, slice[1:])
-	args = slice[:len(slice)-1]
-	if len(args) == 0 {
-		args = args[:1]
-		args[0] = ""
+	slice = slice[:len(slice)-1]
+	if len(slice) == 0 {
+		slice = slice[:1]
+		slice[0] = ""
 	} //End conditional
+	return slice
 } //End sliceShorten()
 
 func cmdSwitch(command string) {
@@ -131,6 +170,8 @@ func cmdSwitch(command string) {
 		fmt.Println(pwd())
 	case "help":
 		help("")
+	case "os":
+		fmt.Println(runtime.GOOS)
 	default:
 		help("gangweed") //rise tf up. its gamer time
 	} //End switch
