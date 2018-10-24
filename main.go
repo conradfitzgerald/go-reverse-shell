@@ -9,32 +9,35 @@ import (
 	"strings"
 )
 
+var input userInput //User inpute (command and arguments)
+var args []string   //Temporary argument storage
+
 //Gets rid of a few lines of code.
 //Panics are better than completely destroying everything I hold dear.
 func check(err error) {
 	if err != nil {
 		panic(err)
-	}
-}
+	} //End conditional
+} //End check()
 
 //Gets working directory/Current Directory (needs to be wrapped in fmt.Print*())
 func pwd() string {
 	out, err := os.Getwd()
 	check(err)
 	return out
-}
+} //End pwd()
 
 //Moves around the filesystem.
 //I can probably get away without returning anything.
-func cd(path string) int {
+func cd(path string) {
 	if path == "" {
 		path = "."
 	}
 	err := os.Chdir(path)
 	check(err)
-	return 0
-}
+} //End cd()
 
+//The help command (or lack thereof.)
 func help(command string) {
 	if command != "" {
 		fmt.Print("Invalid command.\n\n")
@@ -52,12 +55,11 @@ func help(command string) {
 	fmt.Println("\texec\t--\tComing soon!")
 	fmt.Println()
 	fmt.Println("\thelp\t--\tLists this dialogue.")
-}
+} //End help()
 
 //Enumerates Files/Folders in a directory.
-//Can also probably get away with returning nothing.
 //Need to figure out proper tab alignment.
-func ls(path string) int {
+func ls(path string) {
 	if path == "" {
 		path = "."
 	}
@@ -69,22 +71,18 @@ func ls(path string) int {
 			fmt.Println(file.Name(), "\t", "DIR")
 		} else {
 			fmt.Println(file.Name(), "\t", "FILE", "\t", file.Size())
-		}
-	}
-	return 0
-}
+		} //End conditional
+	} //End for loop
+} //End ls()
 
 func cat(path string) string {
 	file, err := ioutil.ReadFile(path)
 	check(err)
 	return string(file)
-}
+} //End cat()
 
 //Congrats! Here's how it works.
 func main() {
-
-	//Making some Declarations...
-	var input commandline
 	in := bufio.NewReader(os.Stdin)
 
 	//Constantly Waiting to do something...
@@ -92,43 +90,48 @@ func main() {
 		fmt.Print(pwd(), " $ ")          //Shells need to look pretty.
 		line, err := in.ReadString('\n') //Get input
 		check(err)
-		args := strings.Split(strings.TrimSuffix(line, "\n"), " ") //Take off the newline, split everything by spaces.
-		input.command = args[0]                                    //Set the actual command.
+		args = strings.Split(strings.TrimSuffix(line, "\n"), " ") //Take off the newline, split everything by spaces.
+		input.cmd = args[0]                                       //Set the actual command.
 
 		//Performing pop/left shift in the input slice
-		copy(args, args[1:])
-		args = args[:len(args)-1]
-
-		//Just to stop slice index out-of-bounds...
-		if len(args) == 0 {
-			args = args[:1]
-			args[0] = ""
-		}
+		sliceShorten(args)
 
 		//Set the actual arguments to the remaining slice.
-		input.arguments = args
+		input.argv = args
 
 		//Comand Switch
-		switch input.command {
-		case "cd":
-			cd(input.arguments[0])
-		case "ls":
-			ls(input.arguments[0])
-		case "cat":
-			fmt.Print(cat(input.arguments[0]))
-		case "pwd":
-			fmt.Println(pwd())
-		case "help":
-			help("")
-		default:
-			help("gangweed") //rise the heck up. its gamer time
-		}
-	}
-}
+		cmdSwitch(input.cmd)
+	} //This never ends (for true loop)
+} //End main()
 
 //Self explanatory. Stores the command for the switch and stores an array or arguments.
-//Will likely change struct name at a later date.
-type commandline struct {
-	command   string
-	arguments []string
-}
+type userInput struct {
+	cmd  string
+	argv []string
+} //End Structure definition.
+
+func sliceShorten(slice []string) { //Pop/left shift on the arguments from the raw input.
+	copy(slice, slice[1:])
+	args = slice[:len(slice)-1]
+	if len(args) == 0 {
+		args = args[:1]
+		args[0] = ""
+	} //End conditional
+} //End sliceShorten()
+
+func cmdSwitch(command string) {
+	switch command {
+	case "cd":
+		cd(input.argv[0])
+	case "ls":
+		ls(input.argv[0])
+	case "cat":
+		fmt.Print(cat(input.argv[0]))
+	case "pwd":
+		fmt.Println(pwd())
+	case "help":
+		help("")
+	default:
+		help("gangweed") //rise tf up. its gamer time
+	} //End switch
+} //End cmdSwitch()
