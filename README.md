@@ -15,6 +15,8 @@ Packages {
   fmt
   strings
   os
+  os/exec
+  runtime
 }
 A Linux OS
 ```
@@ -27,6 +29,17 @@ If someone wants to help make a Windows branch, feel free to do so.
 ### Installation/Usage:
 `go run main.go` OR `go build main.go`
 
+### Warranty
+Read the license. There is none. If something really breaks your computer and you can't unfuck it, good luck.
+I wrote 80% of this shell while absolutely hammered. Read the code yourself and determine whether it's safe or not.
+
+I didn't make this to break anyone's computer or as some weird prank. Everything built-in to this program is tested by me before it's pushed to the main branch. You should still be testing it in a safe environment before trying to unleash it into the wild.
+
+### Issues
+There's no warranty on this, again. But if something is getting weird behaviour and you can't figure out why, then open up an issue here. Don't email me. Don't dox me and contact me from there. Open the issue here, if I feel like it's worth my time, I'll help you fix it.
+
+Go isn't a difficult language. You can probably fix most issues yourself (I have like 50 lines of single-line comments, don't cry about documentation.)
+
 ---
 
 ## TODO:
@@ -35,11 +48,11 @@ If someone wants to help make a Windows branch, feel free to do so.
 [X] -- Implement cat()
 [X] -- Implement help()
 [X] -- Implement exec()
-[ ] -- Implement rm/rf()
+[X] -- Implement rm/rf()
 [ ] -- Enumeration scripts?
 [ ] -- Implement download()
 [ ] -- Implement upload()
-[ ] -- Implement remoteDownload()
+[X] -- Implement remote()
 [ ] -- Set up server/client
 [X] -- Windows Testing
 [ ] -- Windows working
